@@ -21,10 +21,10 @@ public class AccountsEntity {
     @Column(name = "AccountType")
     private String accountType;
     @Column(name = "AccountNumber")
-    private int accountNumber;
+    private long accountNumber;
     @Column(name = "Balance")
     private double balance;
-    @Column(name = "CreditAmount")
+    @Column(name = "CreditedAmount")
     private double creditedAmount;
     @Column(name = "InterestRate")
     private double interestRate;

@@ -7,11 +7,12 @@ import  lombok.*;
 @Entity
 @Getter
 @Setter
+@Table(name = "ExternalBank")
 public class ExternalBankEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long externalBankID;
 
     private String bankName;
-    private int bankCode;
+    private String bankCode;
 }

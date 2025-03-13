@@ -13,7 +13,7 @@ public class AccountsDTO {
     private Long accountID;
     private Long customerID;
     private String accountType;
-    private int accountNumber;
+    private long accountNumber;
     private double creditedAmount;
     private double balance;
     private double interestRate;

@@ -17,4 +17,8 @@ public class TransactionDTO {
     private boolean isExternal;
     private double transactionCharge;
 
+    private Long sourceAccountID;
+    private Long destinationAccountID;
+
+    private Long customerID;
 }

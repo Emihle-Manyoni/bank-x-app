@@ -7,9 +7,11 @@ import AbsaRBB.entity.AccountsEntity;
 import AbsaRBB.entity.CustomerEntity;
 import AbsaRBB.entity.ExternalBankEntity;
 import AbsaRBB.entity.TransactionEntity;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
+@Component
 public class EntityDTOMapper {
 
     public static CustomerEntity toCustomerEntity(CustomerDTO customerDTO) {
