@@ -4,6 +4,7 @@ import AbsaRBB.dto.AccountsDTO;
 import AbsaRBB.dto.TransactionDTO;
 import AbsaRBB.entity.AccountsEntity;
 import AbsaRBB.entity.ExternalBankEntity;
+import AbsaRBB.entity.ReconciliationEntity;
 import AbsaRBB.entity.TransactionEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class TransactionService {
     private final ExternalBankRepository externalBankRepository;
     private final EntityDTOMapper entityDTOMapper;
     private final AccountsDomainRepo accountsDomainRepo;
+    private final ReconciliationRepository reconciliationRepository;
 
     private static final double TRANSACTION_FEE_RATE = 0.0005;
 
@@ -28,12 +30,13 @@ public class TransactionService {
     public TransactionService(TransactionRepository transactionRepository,
                               AccountsRepository accountsRepository,
                               ExternalBankRepository externalBankRepository, EntityDTOMapper entityDTOMapper,
-                              AccountsDomainRepo accountsDomainRepo) {
+                              AccountsDomainRepo accountsDomainRepo, ReconciliationRepository reconciliationRepository) {
         this.transactionRepository = transactionRepository;
         this.accountsRepository = accountsRepository;
         this.externalBankRepository = externalBankRepository;
         this.entityDTOMapper = entityDTOMapper;
         this.accountsDomainRepo = accountsDomainRepo;
+        this.reconciliationRepository = reconciliationRepository;
     }
 
     public List<TransactionDTO> getAllTransactions() {
@@ -88,6 +91,10 @@ public class TransactionService {
 
         TransactionEntity transactionEntity = entityDTOMapper.toTransactionEntity(transactionDTO, account, externalBank);
         TransactionEntity savedTransaction = transactionRepository.save(transactionEntity);
+
+
+        System.out.println("Notification Service Payment successful: R" + transactionDTO.getTransactionAmount() +
+                " from account " + account.getAccountNumber());
 
         return entityDTOMapper.toTransactionDTO(savedTransaction);
     }
@@ -176,6 +183,20 @@ public class TransactionService {
 
         TransactionEntity transactionEntity = entityDTOMapper.toTransactionEntity(transactionDTO, account, externalBank);
         TransactionEntity savedTransaction = transactionRepository.save(transactionEntity);
+
+        System.out.println("Transaction saved successfully with ID: " + savedTransaction.getTransactionID());
+
+        ReconciliationEntity reconciliation = new ReconciliationEntity();
+        reconciliation.setTransactionAmount(transactionDTO.getTransactionAmount());
+        reconciliation.setTransactionDate(transactionDTO.getTransactionDate());
+        reconciliation.setTransactionCharge(transactionFee);
+        reconciliation.setCreatedDate(new Date());
+        reconciliation.setTransactionType(transactionDTO.getTransactionType());
+        reconciliation.setStatus("Pending");
+        reconciliation.setReconciliationStatus("Unmatched");
+        reconciliation.setBankName(externalBank.getBankName());
+        reconciliation.setBankCode(externalBank.getBankCode());
+
 
         return entityDTOMapper.toTransactionDTO(savedTransaction);
     }
