@@ -24,7 +24,7 @@ public class AccountService {
     }
 
 
-    public List<AccountsDTO> getAccountsByCustomerId(Integer customerId) {
+    public List<AccountsDTO> getAccountsByCustomerId(Long customerId) {
         return accountsRepository.findByCustomerCustomerID(customerId)
                 .stream()
                 .map(EntityDTOMapper::toAccountDTO)

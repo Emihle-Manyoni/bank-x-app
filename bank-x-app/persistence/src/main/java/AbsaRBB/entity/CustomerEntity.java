@@ -1,24 +1,32 @@
 package AbsaRBB.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
 @Entity
-@Data  // Optional: if you're using Lombok
+@Table(name = "Customer")
 public class CustomerEntity {
 
-    // If not using Lombok, add getters and setters:
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "CustomerID")
     private Long customerID;
-
+    @Column(name = "FirstName")
     private String firstName;
+    @Column(name = "LastName")
     private String lastName;
+    @Column(name = "IDNumber")
     private String idNumber;
+    @Column(name = "EmailAddress")
     private String emailAddress;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    private List<AccountsEntity> accounts = new ArrayList<>();
 
 }

@@ -11,20 +11,26 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "Accounts")
 public class AccountsEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "AccountID")
     private Long accountID;
-
+    @Column(name = "AccountType")
     private String accountType;
+    @Column(name = "AccountNumber")
     private int accountNumber;
+    @Column(name = "Balance")
     private double balance;
+    @Column(name = "CreditAmount")
     private double creditedAmount;
+    @Column(name = "InterestRate")
     private double interestRate;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
+    @JoinColumn(name = "CustomerID")
     private CustomerEntity customer;
 
 }
