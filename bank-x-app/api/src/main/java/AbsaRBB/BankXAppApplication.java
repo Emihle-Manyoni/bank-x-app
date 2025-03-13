@@ -1,4 +1,4 @@
-package AbsaRBB.bank_x_app;
+package AbsaRBB;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
