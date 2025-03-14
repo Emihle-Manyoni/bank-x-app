@@ -44,8 +44,7 @@ public class ReconciliationService {
             for (TransactionDTO transaction : transactionDTOs) {
                 if (transaction.getTransactionAmount() == recon.getTransactionAmount() &&
                         transaction.getTransactionType().equals(recon.getTransactionType()) &&
-                        transaction.getTransactionCharge() == recon.getTransactionCharge() &&
-                        isSameDate(transaction.getTransactionDate(), recon.getTransactionDate())) {
+                        transaction.getTransactionCharge() == recon.getTransactionCharge()) {
 
                     recon.setReconciliationStatus("Matched");
                     recon.setStatus("Processed");
@@ -57,13 +56,5 @@ public class ReconciliationService {
             }
         }
         System.out.println("Reconciliation completed: " + matchedCount + " records processed");
-    }
-
-    private boolean isSameDate(Date date1, Date date2) {
-        if (date1 == null || date2 == null) {
-            return false;
-        }
-        long differenceMs = Math.abs(date1.getTime() - date2.getTime());
-        return differenceMs <= (60 * 1000);
     }
 }
