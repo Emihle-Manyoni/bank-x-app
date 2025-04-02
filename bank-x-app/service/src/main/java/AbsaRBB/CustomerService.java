@@ -1,13 +1,19 @@
 package AbsaRBB;
 
+import AbsaRBB.Exceptions.AccountNotFoundException;
 import AbsaRBB.Exceptions.CustomerNotFoundException;
 import AbsaRBB.dto.AccountsDTO;
 import AbsaRBB.dto.CustomerDTO;
+import AbsaRBB.dto.TransactionDTO;
+import AbsaRBB.entity.AccountsEntity;
 import AbsaRBB.entity.CustomerEntity;
+import AbsaRBB.entity.ExternalBankEntity;
+import AbsaRBB.entity.TransactionEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -18,14 +24,20 @@ public class CustomerService {
     private final AccountsDomainRepo accountsDomainRepo;
     private final CustomerRepository customerRepository;
     private final AccountsRepository accountsRepository;
+    private final EntityDTOMapper entityDTOMapper;
+    private final TransactionRepository transactionRepository;
+    private final TransactionService transactionService;
 
     @Autowired
     public CustomerService(AccountsDomainRepo accountsDomainRepo,
                            CustomerRepository customerRepository,
-                           AccountsRepository accountsRepository) {
+                           AccountsRepository accountsRepository, EntityDTOMapper entityDTOMapper, TransactionRepository transactionRepository, TransactionService transactionService) {
         this.accountsDomainRepo = accountsDomainRepo;
         this.customerRepository = customerRepository;
         this.accountsRepository = accountsRepository;
+        this.entityDTOMapper = entityDTOMapper;
+        this.transactionRepository = transactionRepository;
+        this.transactionService = transactionService;
     }
 
 
@@ -54,8 +66,20 @@ public class CustomerService {
         savedCustomerDTO.getAccounts().add(savedCurrentAccount);
         savedCustomerDTO.getAccounts().add(savedSavingsAccount);
 
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setAccountID(savedSavingsAccount.getAccountID());
+        transactionDTO.setTransactionAmount(500.00);
+        transactionDTO.setTransactionType("Savings");
+        transactionDTO.setTransactionDate(new Date());
+        transactionDTO.setCreatedDate(new Date());
+        transactionDTO.setExternal(false);
+
+        TransactionDTO savedTransaction = transactionService.createSavingsAccountTransaction(transactionDTO);
+
         return savedCustomerDTO;
     }
+
+
 
     public CustomerDTO getCustomerById(Long customerID) {
         CustomerEntity customerEntityOpt = customerRepository.findById(customerID)

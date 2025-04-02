@@ -15,10 +15,12 @@ public class TransactionEntity {
     @Column(name = "TransactionID")
     private Long transactionID;
 
+    //Stop the bus where are we going !!!!!!!
     @ManyToOne
     @JoinColumn(name = "AccountID", nullable = false)
     private AccountsEntity account;
 
+    //Stop the bus where are we going !!!!!!!
     @ManyToOne
     @JoinColumn(name = "ExternalBankID")
     private ExternalBankEntity externalBank;

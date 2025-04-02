@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Data
 @NoArgsConstructor
@@ -17,5 +20,6 @@ public class AccountsDTO {
     private double creditedAmount;
     private double balance;
     private double interestRate;
+    private List<TransactionDTO> transactions = new ArrayList<>();
 
 }

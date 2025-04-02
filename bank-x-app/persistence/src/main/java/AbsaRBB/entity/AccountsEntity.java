@@ -29,6 +29,7 @@ public class AccountsEntity {
     @Column(name = "InterestRate")
     private double interestRate;
 
+    //Stop the buss where are we going
     @ManyToOne
     @JoinColumn(name = "CustomerID")
     private CustomerEntity customer;
