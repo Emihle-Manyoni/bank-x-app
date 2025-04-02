@@ -24,7 +24,7 @@ public class ReconciliationService {
         this.entityDTOMapper = entityDTOMapper;
     }
 
-    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "0 0 1 * * *")
     public void processExternalTransaction(){
         System.out.println("Starting reconciliation process at " + new Date());
 

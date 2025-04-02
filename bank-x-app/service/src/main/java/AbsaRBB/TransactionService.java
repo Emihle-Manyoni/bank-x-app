@@ -1,5 +1,6 @@
 package AbsaRBB;
 
+import AbsaRBB.Exceptions.*;
 import AbsaRBB.dto.AccountsDTO;
 import AbsaRBB.dto.TransactionDTO;
 import AbsaRBB.entity.AccountsEntity;
@@ -47,43 +48,24 @@ public class TransactionService {
 
     public TransactionDTO getTransactionById(Long id) {
         TransactionEntity transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Transaction not found with ID: " + id));
+                .orElseThrow(() -> new TransactionNotFoundException(id));
         return entityDTOMapper.toTransactionDTO(transaction);
     }
 
     @Transactional
     public TransactionDTO createPayment(TransactionDTO transactionDTO) {
         AccountsEntity account = accountsRepository.findById(transactionDTO.getAccountID())
-                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + transactionDTO.getAccountID()));
-        if (!account.getCustomer().getCustomerID().equals(transactionDTO.getCustomerID())) {
-            throw new RuntimeException("Customer verification failed. Account does not belong to the specified customer.");
-        }
+                .orElseThrow(() -> new AccountNotFoundException(transactionDTO.getAccountID()));
 
         double transactionFee = transactionDTO.getTransactionAmount() * TRANSACTION_FEE_RATE;
         transactionDTO.setTransactionCharge(transactionFee);
 
-        transactionDTO.setCreatedDate(new Date());
-        if (transactionDTO.getTransactionDate() == null) {
-            transactionDTO.setTransactionDate(new Date());
-        }
-
-        if (transactionDTO.getTransactionType() == null || transactionDTO.getTransactionType().isEmpty()) {
-            transactionDTO.setTransactionType("Payment");
-        }
-
         ExternalBankEntity externalBank = null;
-        if (transactionDTO.getExternalBankID() != null) {
-            externalBank = externalBankRepository.findById(transactionDTO.getExternalBankID())
-                    .orElse(null);
-            transactionDTO.setExternal(true);
-        } else {
-            transactionDTO.setExternal(false);
-        }
 
         double newBalance = account.getBalance() - transactionDTO.getTransactionAmount() - transactionFee;
 
         if (newBalance < 0) {
-            throw new RuntimeException("Insufficient funds for this transaction");
+            throw new InsufficientFundsException();
         }
 
         account.setBalance(newBalance);
@@ -91,7 +73,6 @@ public class TransactionService {
 
         TransactionEntity transactionEntity = entityDTOMapper.toTransactionEntity(transactionDTO, account, externalBank);
         TransactionEntity savedTransaction = transactionRepository.save(transactionEntity);
-
 
         System.out.println("Notification Service Payment successful: R" + transactionDTO.getTransactionAmount() +
                 " from account " + account.getAccountNumber());
@@ -102,22 +83,23 @@ public class TransactionService {
     @Transactional
     public TransactionDTO createInternalTransfer(TransactionDTO transactionDTO) {
         AccountsEntity sourceAccount = accountsRepository.findById(transactionDTO.getSourceAccountID())
-                .orElseThrow(() -> new RuntimeException("Source account not found with ID: " + transactionDTO.getSourceAccountID()));
+                .orElseThrow(() -> new SourceAccountNotFoundException(transactionDTO.getSourceAccountID()));
 
         AccountsEntity destinationAccount = accountsRepository.findById(transactionDTO.getDestinationAccountID())
-                .orElseThrow(() -> new RuntimeException("Destination account not found with ID: " + transactionDTO.getDestinationAccountID()));
+                .orElseThrow(() -> new DestinationAccountNotFoundException(transactionDTO.getDestinationAccountID()));
 
         if (!sourceAccount.getCustomer().getCustomerID().equals(transactionDTO.getCustomerID()) ||
                 !destinationAccount.getCustomer().getCustomerID().equals(transactionDTO.getCustomerID())) {
-            throw new RuntimeException("Customer verification failed. One or both accounts do not belong to the specified customer.");
+            throw new BadRequestException("Customer verification failed. One or both accounts do not belong to the specified customer.");
         }
+
 
         double transactionFee = transactionDTO.getTransactionAmount() * TRANSACTION_FEE_RATE;
         transactionDTO.setTransactionCharge(transactionFee);
 
         double totalDeduction = transactionDTO.getTransactionAmount() + transactionFee;
         if (sourceAccount.getBalance() < totalDeduction) {
-            throw new RuntimeException("Insufficient funds in source account");
+            throw new InsufficientFundsException();
         }
 
         sourceAccount.setBalance(sourceAccount.getBalance() - totalDeduction);
@@ -153,31 +135,13 @@ public class TransactionService {
     public TransactionDTO createExternalTransaction(TransactionDTO transactionDTO) {
 
         AccountsEntity account = accountsRepository.findById(transactionDTO.getAccountID())
-                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + transactionDTO.getAccountID()));
+                .orElseThrow(() -> new AccountNotFoundException( transactionDTO.getAccountID()));
 
         ExternalBankEntity externalBank = externalBankRepository.findById(transactionDTO.getExternalBankID())
-                .orElseThrow(() -> new RuntimeException("External bank not found with ID: " + transactionDTO.getExternalBankID()));
-
-        transactionDTO.setExternal(true);
-        transactionDTO.setCreatedDate(new Date());
-        if (transactionDTO.getTransactionDate() == null) {
-            transactionDTO.setTransactionDate(new Date());
-        }
+                .orElseThrow(() -> new ExternalBankAccountNotFoundException(transactionDTO.getExternalBankID()));
 
         double transactionFee = transactionDTO.getTransactionAmount() * TRANSACTION_FEE_RATE;
         transactionDTO.setTransactionCharge(transactionFee);
-
-        if ("Credit".equalsIgnoreCase(transactionDTO.getTransactionType())) {
-            account.setBalance(account.getBalance() + transactionDTO.getTransactionAmount() - transactionFee);
-        } else if ("Debit".equalsIgnoreCase(transactionDTO.getTransactionType())) {
-            double newBalance = account.getBalance() - transactionDTO.getTransactionAmount() - transactionFee;
-            if (newBalance < 0) {
-                throw new RuntimeException("Insufficient funds for this transaction");
-            }
-            account.setBalance(newBalance);
-        } else {
-            throw new RuntimeException("Invalid transaction type. Must be 'Credit' or 'Debit'");
-        }
 
         accountsRepository.save(account);
 

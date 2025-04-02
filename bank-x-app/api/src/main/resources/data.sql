@@ -6,10 +6,10 @@ VALUES
 
 INSERT INTO Accounts (CustomerID, AccountType, InterestRate, AccountNumber, Balance, CreditedAmount)
 VALUES
-(1, 'Savings', 0.5, 1000010001, 200.00, 500.00),
-(1, 'Cheque', 0.0, 1000010002, 600.00, 0.00),
-(2, 'Savings', 0.5, 1000010003, 0.00, 500.00),
-(2, 'Cheque', 0.0, 1000010004, 100.00, 0.00);
+(1, 'Savings', 0.5, 103255, 200.00, 500.00),
+(1, 'Current', 0.0, 106788, 600.00, 0.00),
+(2, 'Savings', 0.5, 190546, 0.00, 500.00),
+(2, 'Current', 0.0, 894366, 100.00, 0.00);
 
 
 INSERT INTO ExternalBank (BankName, BankCode)

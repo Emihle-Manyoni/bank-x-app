@@ -1,5 +1,6 @@
 package AbsaRBB;
 
+import AbsaRBB.Exceptions.CustomerNotFoundException;
 import AbsaRBB.dto.AccountsDTO;
 import AbsaRBB.dto.CustomerDTO;
 import AbsaRBB.entity.CustomerEntity;
@@ -26,6 +27,7 @@ public class CustomerService {
         this.customerRepository = customerRepository;
         this.accountsRepository = accountsRepository;
     }
+
 
     @Transactional
     public CustomerDTO createCustomer(CustomerDTO customerDTO) {
@@ -56,11 +58,10 @@ public class CustomerService {
     }
 
     public CustomerDTO getCustomerById(Long customerID) {
-        Optional<CustomerEntity> customerEntityOpt = customerRepository.findById(customerID);
+        CustomerEntity customerEntityOpt = customerRepository.findById(customerID)
+                .orElseThrow(() -> new CustomerNotFoundException(customerID));
 
-        if (customerEntityOpt.isPresent()) {
-            CustomerEntity customerEntity = customerEntityOpt.get();
-            CustomerDTO customerDTO = EntityDTOMapper.toCustomerDTO(customerEntity);
+            CustomerDTO customerDTO = EntityDTOMapper.toCustomerDTO(customerEntityOpt);
 
             List<AccountsDTO> customerAccounts = accountsRepository.findByCustomerCustomerID(customerID)
                     .stream()
@@ -69,9 +70,7 @@ public class CustomerService {
 
             customerDTO.setAccounts(customerAccounts);
             return customerDTO;
-        } else {
-            throw new RuntimeException("Customer not found with ID: " + customerID);
-        }
+
     }
 
     private int generateAccountNumber() {
