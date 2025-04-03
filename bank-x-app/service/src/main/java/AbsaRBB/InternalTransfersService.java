@@ -28,8 +28,6 @@ public class InternalTransfersService {
         this.entityDTOMapper = entityDTOMapper;
     }
 
-    private static final double TRANSACTION_FEE_RATE = 0.0005;
-
     @Transactional
     public TransactionDTO createInternalTransfer(TransactionDTO transactionDTO) {
         AccountsEntity sourceAccount = accountsRepository.findById(transactionDTO.getSourceAccountID())
@@ -40,14 +38,12 @@ public class InternalTransfersService {
 
         if (!sourceAccount.getCustomer().getCustomerID().equals(transactionDTO.getCustomerID()) ||
                 !destinationAccount.getCustomer().getCustomerID().equals(transactionDTO.getCustomerID())) {
-            throw new BadRequestException("Customer verification failed. One or both accounts do not belong to the specified customer.");
+            throw new BadRequestException("Customer verification failed. customer does not own one or both of the accounts .");
         }
 
 
-        double transactionFee = transactionDTO.getTransactionAmount() * TRANSACTION_FEE_RATE;
-        transactionDTO.setTransactionCharge(transactionFee);
 
-        double totalDeduction = transactionDTO.getTransactionAmount() + transactionFee;
+        double totalDeduction = transactionDTO.getTransactionAmount();
         if (sourceAccount.getBalance() < totalDeduction) {
             throw new InsufficientFundsException();
         }
@@ -65,7 +61,6 @@ public class InternalTransfersService {
         sourceTransaction.setTransactionDate(new Date());
         sourceTransaction.setCreatedDate(new Date());
         sourceTransaction.setExternal(false);
-        sourceTransaction.setTransactionCharge(transactionFee);
         transactionRepository.save(sourceTransaction);
 
         TransactionEntity destTransaction = new TransactionEntity();
@@ -75,7 +70,6 @@ public class InternalTransfersService {
         destTransaction.setTransactionDate(new Date());
         destTransaction.setCreatedDate(new Date());
         destTransaction.setExternal(false);
-        destTransaction.setTransactionCharge(0);
         transactionRepository.save(destTransaction);
 
         return entityDTOMapper.toTransactionDTO(sourceTransaction);

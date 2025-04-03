@@ -19,6 +19,7 @@ public class AccountsEntity {
     @Column(name = "AccountID")
     private Long accountID;
     @Column(name = "AccountType")
+    @Enumerated(EnumType.STRING)
     private String accountType;
     @Column(name = "AccountNumber")
     private long accountNumber;
